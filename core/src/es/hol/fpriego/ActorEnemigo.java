@@ -19,14 +19,15 @@ public class ActorEnemigo extends Actor {
 	private float velocidad,estado;
 	private int vida,tipo,puntos;
 	private Rectangle rectEnemigo;
-	private boolean esNuevo,paused;
+	private boolean esNuevo,paused,dibujarEnemigo;
 	private SequenceAction accionParpadeo;
 	
 	public ActorEnemigo(Sprite[] sprites,Animation anim,int tipo,boolean paused) {
 		
-		this.esNuevo = true;
+		this.setEsNuevo(true);
+		this.setDibujarEnemigo(true);
 		this.setPaused(paused);
-		this.tipo = tipo;
+		this.setTipo(tipo);
 		this.setEstado(0);
 		this.animExplota = anim;
 		this.accionParpadeo = new SequenceAction(Actions.color(Color.RED, 0.1f),Actions.color(getColor(),0.1f),
@@ -57,9 +58,14 @@ public class ActorEnemigo extends Actor {
 
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
+		
 		Color col = getColor();
 		batch.setColor(col.r, col.g, col.b, col.a * parentAlpha);
+		
 		if(!paused){
+			
+			setPosRect(getX(), getY());
+			
 			if(getVida()==0){
 				estado+=Gdx.graphics.getDeltaTime();
 				batch.draw(animExplota.getKeyFrame(estado, false), getX(), getY());
@@ -67,7 +73,7 @@ public class ActorEnemigo extends Actor {
 					this.reset();
 				}
 			}
-			else{
+			else if(dibujarEnemigo){
 				batch.draw(img, getX(), getY());
 			}
 		}
@@ -78,26 +84,22 @@ public class ActorEnemigo extends Actor {
 			this.setX((float) (MathUtils.random(0, 37))*10);
 			this.setY(600);
 			this.esNuevo = false;
-			setPosRect(getX(), getY());
 		}
 		else {
 			if(tipo==0){
 				this.setY(this.getY()-velocidad);
-				setPosRect(getX(), getY());
 				if(this.getY()+this.getHeight()<0){
 					this.esNuevo = true;
 				}
 			}
 			else if(tipo==1){
 				this.setY(this.getY()-velocidad);
-				setPosRect(getX(), getY());
 				if(this.getY()+this.getHeight()<0){
 					this.esNuevo = true;
 				}
 			}
 			else if(tipo==2){
 				this.setY(this.getY()-velocidad);
-				setPosRect(getX(), getY());
 				if(this.getY()+this.getHeight()<0){
 					this.esNuevo = true;
 				}
@@ -181,12 +183,15 @@ public class ActorEnemigo extends Actor {
 		switch(this.tipo){
 		case 0:
 			this.vida = 2;
+			this.setVelocidad(2);
 			break;
 		case 1:
 			this.vida = 3;
+			this.setVelocidad(3);
 			break;
 		case 2:
 			this.vida = 3;
+			this.setVelocidad(4);
 			break;
 		}
 	}
@@ -229,6 +234,14 @@ public class ActorEnemigo extends Actor {
 
 	public void setImgAnim(Sprite imgAnim) {
 		this.imgAnim = imgAnim;
+	}
+
+	public boolean isDibujarEnemigo() {
+		return dibujarEnemigo;
+	}
+
+	public void setDibujarEnemigo(boolean dibujarEnemigo) {
+		this.dibujarEnemigo = dibujarEnemigo;
 	}
 
 }

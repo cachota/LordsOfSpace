@@ -16,19 +16,19 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class PantallaJuego extends Pantalla {
 	
-	Stage escenario;
-	ActorNave nave;
-	ActorFondo fondo1,fondo2,fondo3;
-	ActorEnemigo enemy1;
-	ActorAsteroide asteroide;
-	Array<ActorEnemigo> arrayEnemigos;
-	Array<ActorAsteroide> arrayAsteroides;
-	Touchpad pad;
-	TextButton botonDisparo;
-	JuegoMain game;
-	ActorTexto ready;
-	Skin skin;
-	int estado,tiempo,puntuacion;
+	private Stage escenario;
+	private ActorNave nave;
+	private ActorFondo fondo1,fondo2,fondo3;
+	private ActorEnemigo enemy1;
+	private ActorAsteroide asteroide;
+	private Array<ActorEnemigo> arrayEnemigos;
+	private Array<ActorAsteroide> arrayAsteroides;
+	private Touchpad pad;
+	private TextButton botonDisparo;
+	private JuegoMain game;
+	private ActorTexto ready;
+	private Skin skin;
+	private int estado,tiempo,puntuacion;
 	private boolean pause,gameover;
 	private Dialog menuPausa;
 	private Button botonSalir,botonResumir;
@@ -202,25 +202,31 @@ public class PantallaJuego extends Pantalla {
 			}
 			
 			for(ActorEnemigo ae:arrayEnemigos){
-				ae.mover(ae.getTipo());
-				if(!nave.esInmune()){	
-					if(nave.getRectNave().overlaps(ae.getRectEnemigo())){
+				
+				if(nave.getRectNave().overlaps(ae.getRectEnemigo()) && ae.getVida()!=0){	
+					if(!nave.esInmune()){
 						nave.setVida(nave.getVida()-1);
 						barraVida.quitarVida();
 						nave.setInmune(true);
 						ae.setVida(0);
+						ae.setVelocidad(0);
 						if(nave.getVida()!=0){
 							nave.parpadeo();
 						}
+						else if(nave.getVida()==0){
+							ae.setDibujarEnemigo(false);
+						}
+					}
+					else if(nave.esInmune()){
+						nave.setContadorIn(nave.getContadorIn()+1);
+						if(nave.getContadorIn()>5){
+							nave.setContadorIn(0);
+							nave.setInmune(false);
+						}
 					}
 				}
-				else{
-					nave.setContadorIn(nave.getContadorIn()+1);
-					if(nave.getContadorIn()>5){
-						nave.setInmune(true);
-						nave.setContadorIn(0);
-					}
-				}
+				
+				ae.mover(ae.getTipo());
 			}
 			
 			for(ActorAsteroide aa:arrayAsteroides){
@@ -228,6 +234,7 @@ public class PantallaJuego extends Pantalla {
 			}
 			
 			if(barraVida.getVida()==0){
+				barraVida.setDibujarVida(false);
 				this.gameover = true;
 			}
 			

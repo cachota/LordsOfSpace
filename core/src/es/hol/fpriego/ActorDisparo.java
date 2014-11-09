@@ -11,6 +11,7 @@ public class ActorDisparo extends Actor {
 	private Sprite img;
 	private Rectangle rectDisparo;
 	private float velocidad;
+	
 	public ActorDisparo(Sprite img,float x,float y) {
 		
 		this.setImg(img);

@@ -24,14 +24,25 @@ public class ActorNave extends Actor {
 	
 	public ActorNave(Sprite img) {
 		
+		// Se crea la nave con la imagen pasada por parámetro
 		this.setImg(img);
+		
 		this.setVelocidad(4);
 		this.setVida(5);
+		
+		// La nave no es inmune de inicio y se crea un contador para la duracion de dicha inmunidad
 		this.setInmune(false);
 		this.contadorIn = 0;
+		
+		// Array para los disparos
 		this.shots = new Array<ActorDisparo>();
+		
 		this.setSize(img.getWidth(), img.getHeight());
+		
+		// Rectangulo para la deteccion de colisiones
 		this.setRectNave(new Rectangle(getX(),getY(),img.getWidth(),img.getHeight()));
+		
+		// Accion secuencial para cuando se recibe una colision
 		this.accionParpadeo = new SequenceAction(Actions.color(Color.RED, 0.1f),Actions.color(getColor(),0.1f),
 				Actions.color(Color.RED, 0.1f),Actions.color(getColor(),0.1f));
 	}
@@ -42,8 +53,9 @@ public class ActorNave extends Actor {
 		Color col = getColor();
 		batch.setColor(col.r, col.g, col.b, col.a*parentAlpha);
 		
-		batch.draw(img, getX(), getY());
 		this.setPosRectNave(getX(), getY());
+		batch.draw(img, getX(), getY());
+		
 		
 		for(int i=0;i<this.getShots().size;i++){
 			ActorDisparo tempDisparo = this.getShots().get(i);

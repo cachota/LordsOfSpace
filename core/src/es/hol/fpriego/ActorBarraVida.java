@@ -12,6 +12,7 @@ public class ActorBarraVida extends Actor{
 	
 	private NinePatch barra,vida;
 	private Sprite naveIcon;
+	private boolean dibujarVida;
 	
 	public ActorBarraVida(Texture imgBarra,Texture imgVida, Sprite naveIcon) {
 		
@@ -22,6 +23,7 @@ public class ActorBarraVida extends Actor{
 		this.setPosition(300, 570);
 		this.barra.setRightWidth(80);
 		this.vida.setRightWidth(105);
+		this.dibujarVida = true;
 	}
 
 	@Override
@@ -31,7 +33,9 @@ public class ActorBarraVida extends Actor{
 		batch.setColor(col.r, col.g, col.b, col.a*parentAlpha);
 		
 		barra.draw(batch, getX(), getY(), barra.getTotalWidth(), barra.getTotalHeight());
-		vida.draw(batch, getX(), getY(), vida.getTotalWidth(), vida.getTotalHeight());
+		if(dibujarVida){
+			vida.draw(batch, getX(), getY(), vida.getTotalWidth(), vida.getTotalHeight());
+		}
 		batch.draw(naveIcon, naveIcon.getX(), naveIcon.getY());
 	}
 
@@ -50,6 +54,14 @@ public class ActorBarraVida extends Actor{
 	public void quitarVida() {
 		
 		vida.setRightWidth(vida.getRightWidth()-21);
+	}
+
+	public boolean isDibujarVida() {
+		return dibujarVida;
+	}
+
+	public void setDibujarVida(boolean dibujarVida) {
+		this.dibujarVida = dibujarVida;
 	}
 	
 
