@@ -1,6 +1,8 @@
 package es.hol.fpriego;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
@@ -14,21 +16,24 @@ import com.badlogic.gdx.utils.Array;
 public class ActorNave extends Actor {
 	
 	private Sprite img;
+	private Animation animExplota;
 	private Array<ActorDisparo> shots;
 	private Rectangle rectNave;
-	private float velocidad;
+	private float velocidad,estado;
 	private int vida,contadorIn;
 	private Touchpad pad;
 	private SequenceAction accionParpadeo;
 	private boolean esInmune;
 	
-	public ActorNave(Sprite img) {
+	public ActorNave(Sprite img,Animation anim) {
 		
-		// Se crea la nave con la imagen pasada por parámetro
+		// Se crea la nave con la imagen y la animacion de explosion pasadas por parametro
 		this.setImg(img);
+		this.setAnimExplota(anim);
 		
 		this.setVelocidad(4);
 		this.setVida(5);
+		this.setEstado(0);
 		
 		// La nave no es inmune de inicio y se crea un contador para la duracion de dicha inmunidad
 		this.setInmune(false);
@@ -53,15 +58,28 @@ public class ActorNave extends Actor {
 		Color col = getColor();
 		batch.setColor(col.r, col.g, col.b, col.a*parentAlpha);
 		
-		this.setPosRectNave(getX(), getY());
-		batch.draw(img, getX(), getY());
-		
+		if(getVida()==0){
+			estado+=Gdx.graphics.getDeltaTime();
+			batch.draw(animExplota.getKeyFrame(estado, false), getX(), getY());
+		}
+		else{
+			batch.draw(img, getX(), getY());
+		}
 		
 		for(int i=0;i<this.getShots().size;i++){
 			ActorDisparo tempDisparo = this.getShots().get(i);
 			tempDisparo.draw(batch, parentAlpha);
 		}
+	}
+
+	@Override
+	public void act(float delta) {
 		
+		if(esInmune() && this.getActions().size==0){
+			parpadeo();
+		}
+		
+		super.act(delta);
 	}
 
 	public void mover(Touchpad pad){
@@ -70,6 +88,7 @@ public class ActorNave extends Actor {
 		
 		this.setX(this.getX() + pad.getKnobPercentX()*this.getVelocidad());
 		this.setY(this.getY() + pad.getKnobPercentY()*this.getVelocidad());
+		this.setPosRectNave(getX(), getY());
 		
 		for(int i=0;i<this.getShots().size;i++){
 			ActorDisparo tempDisparo = this.getShots().get(i);
@@ -158,6 +177,22 @@ public class ActorNave extends Actor {
 
 	public void setContadorIn(int contadorIn) {
 		this.contadorIn = contadorIn;
+	}
+
+	public Animation getAnimExplota() {
+		return animExplota;
+	}
+
+	public void setAnimExplota(Animation animExplota) {
+		this.animExplota = animExplota;
+	}
+
+	public float getEstado() {
+		return estado;
+	}
+
+	public void setEstado(float estado) {
+		this.estado = estado;
 	}
 
 }

@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class PantallaJuego extends Pantalla {
@@ -21,12 +20,10 @@ public class PantallaJuego extends Pantalla {
 	private ActorFondo fondo1,fondo2,fondo3;
 	private ActorEnemigo enemy1;
 	private ActorAsteroide asteroide;
-	private Array<ActorEnemigo> arrayEnemigos;
-	private Array<ActorAsteroide> arrayAsteroides;
 	private Touchpad pad;
 	private TextButton botonDisparo;
 	private JuegoMain game;
-	private ActorTexto ready;
+	private ActorTexto ready,score,textoPuntos;
 	private Skin skin;
 	private int estado,tiempo,puntuacion;
 	private boolean pause,gameover;
@@ -50,7 +47,7 @@ public class PantallaJuego extends Pantalla {
 		
 		estado = 0;
 		tiempo = 0;
-		puntuacion = 0;
+		setPuntuacion(0);
 		pause = false;
 		gameover = false;
 		
@@ -74,10 +71,6 @@ public class PantallaJuego extends Pantalla {
 			actualizarJuego();
 			break;
 		}
-		
-		//game.batch.begin();
-		//	(new BitmapFont()).draw(game.batch, " "+nave.getShots().size, 10, 250);
-		//game.batch.end();
 	}
 	
 	private void inicioJuego() {
@@ -86,7 +79,10 @@ public class PantallaJuego extends Pantalla {
 				if(tiempo>100){
 					escenario.getActors().removeValue(ready, true);
 					asteroide.setPaused(false);
+					asteroide.setMover(true);
 					enemy1.setPaused(false);
+					enemy1.setMover(true);
+					botonDisparo.setDisabled(false);
 					estado=1;
 				}
 			game.batch.end();
@@ -96,13 +92,12 @@ public class PantallaJuego extends Pantalla {
 
 	public void cargarInicioJuego(){
 		
-		arrayEnemigos = new Array<ActorEnemigo>();
-		arrayAsteroides = new Array<ActorAsteroide>();
-		
 		barraVida = new ActorBarraVida(game.graficos.getBarraVidaTex(), game.graficos.getVidaTex(), game.graficos.getMiniPlayerSprite());
 		
 		pad = new Touchpad(1,skin);
 		botonDisparo = new TextButton("Fire!",skin);
+		botonDisparo.setSize(100, 70);
+		botonDisparo.setDisabled(true);
 		
 		menuPausa = new Dialog("Pausa",skin);
 		botonSalir = new TextButton("Salir",skin);
@@ -117,13 +112,13 @@ public class PantallaJuego extends Pantalla {
 		fondo2 = new ActorFondo(game.graficos.getFondoSprite());
 		fondo3 = new ActorFondo(game.graficos.getFondoSprite());
 		ready = new ActorTexto(game.graficos.getSkin(),"Preparate!",2f,130,320);
+		score = new ActorTexto(game.graficos.getSkin(), "score: ", 2f, 20, 550);
+		textoPuntos = new ActorTexto(game.graficos.getSkin(),"0",2f,110,550);
 		
-		asteroide = new ActorAsteroide(game.graficos.getAsteroideSprite(),true);
-		enemy1 = new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),2,true);
-		arrayEnemigos.add(enemy1);
-		arrayAsteroides.add(asteroide);
+		asteroide = new ActorAsteroide(game.graficos.getAsteroideSprite(),game.graficos.getAnimRompe(),true,false);
+		enemy1 = new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),0,true,false);
 		
-		nave = new ActorNave(game.graficos.getNaveSprite());
+		nave = new ActorNave(game.graficos.getNaveSprite(),game.graficos.getAnimExplota());
 		nave.setPosition(escenario.getWidth()/2, 100);
 		
 		Gdx.input.setInputProcessor(escenario);
@@ -168,6 +163,8 @@ public class PantallaJuego extends Pantalla {
 		escenario.addActor(enemy1);
 		escenario.addActor(asteroide);
 		escenario.addActor(ready);
+		escenario.addActor(score);
+		escenario.addActor(textoPuntos);
 		escenario.addActor(barraVida);
 		
 		botonDisparo.setPosition(280, 20);
@@ -178,67 +175,74 @@ public class PantallaJuego extends Pantalla {
 	}
 	
 	public void actualizarJuego(){
+		
 		if(!gameover && !pause){
 			
-			if(nave.getShots().size>0){
-				for(int i=0;i<nave.getShots().size;i++){
-					
-					for(ActorEnemigo ae:arrayEnemigos){	
-						
-						if(ae.colisionDisparo(nave.getShots().get(i).getRectDisparo())){
-							nave.getShots().removeIndex(i);
-							if(ae.getVida()>0){
-								ae.parpadeo();
-							}
-						}
-						else if(nave.getShots().get(i).getY()>escenario.getHeight()-nave.getShots().get(i).getHeight()){
-								nave.getShots().removeIndex(i);
-						}
-					}
-					//for(ActorAsteroide aa:arrayAsteroides){
-					//	
-					//}
-				}
-			}
-			
-			for(ActorEnemigo ae:arrayEnemigos){
-				
-				if(nave.getRectNave().overlaps(ae.getRectEnemigo()) && ae.getVida()!=0){	
-					if(!nave.esInmune()){
-						nave.setVida(nave.getVida()-1);
-						barraVida.quitarVida();
-						nave.setInmune(true);
-						ae.setVida(0);
-						ae.setVelocidad(0);
-						if(nave.getVida()!=0){
-							nave.parpadeo();
-						}
-						else if(nave.getVida()==0){
-							ae.setDibujarEnemigo(false);
-						}
-					}
-					else if(nave.esInmune()){
-						nave.setContadorIn(nave.getContadorIn()+1);
-						if(nave.getContadorIn()>5){
-							nave.setContadorIn(0);
-							nave.setInmune(false);
-						}
-					}
-				}
-				
-				ae.mover(ae.getTipo());
-			}
-			
-			for(ActorAsteroide aa:arrayAsteroides){
-				aa.mover();
-			}
-			
-			if(barraVida.getVida()==0){
-				barraVida.setDibujarVida(false);
-				this.gameover = true;
+			if(botonDisparo.isDisabled()){
+				botonDisparo.setDisabled(false);
 			}
 			
 			nave.mover(pad);
+				
+			for(Actor actor:escenario.getActors()){
+				
+				if(actor instanceof ActoresEnemigos){
+						
+					((ActoresEnemigos) actor).setMover(true);
+						
+					if(((ActoresEnemigos) actor).colisionNave(nave.getRectNave()) && !nave.esInmune()){
+						nave.setVida(nave.getVida()-1);
+						barraVida.quitarVida();
+						nave.setInmune(true);
+						if(nave.getVida()==0){
+							((ActoresEnemigos) actor).setDibujar(false);
+							
+						}
+					}
+										
+					if(nave.getShots().size>0){
+					
+						for(int i=0;i<nave.getShots().size;i++){
+						
+							if(((ActoresEnemigos)actor).colisionDisparo(nave.getShots().get(i).getRectDisparo())){
+								
+								if(((ActoresEnemigos) actor).getVida()==0){
+									this.setPuntuacion(this.getPuntuacion()+((ActoresEnemigos)actor).getPuntos());
+								}
+								nave.getShots().removeIndex(i);
+							}
+							else if(nave.getShots().get(i).getY()>escenario.getHeight()-nave.getShots().get(i).getHeight()){
+								nave.getShots().removeIndex(i);
+							}
+						}
+				
+					}
+				}
+						
+			}
+			
+			textoPuntos.setTexto(Integer.toString(this.getPuntuacion()));
+				
+			if(nave.esInmune()){
+				nave.setContadorIn(nave.getContadorIn()+1);
+				if(nave.getContadorIn()>100){
+					nave.setContadorIn(0);
+					nave.setInmune(false);
+				}
+			}
+			
+			if(barraVida.getVida()==0){
+				
+				nave.setInmune(false);
+				barraVida.setDibujarVida(false);
+				
+				for(Actor actor:escenario.getActors()){
+					if(actor instanceof ActorEnemigo){
+						((ActorEnemigo) actor).setMover(false);
+					}
+				}
+				this.gameover = true;
+			}
 			
 			if(fondo1.getY()+512<0){
 				fondo1.setY(fondo3.getY()+512);
@@ -271,21 +275,35 @@ public class PantallaJuego extends Pantalla {
 				nave.setY(0);
 			}
 			
-			//if(nave.getRectNave().overlaps(enemy1.getRectEnemigo())){
-			//	nave.setVida(nave.getVida()-1);
-			//	enemy1.setEsNuevo(true);
-			//}
-			
 			if(Gdx.input.isKeyPressed(Keys.BACK) || Gdx.input.isKeyPressed(Keys.ESCAPE) || Gdx.input.isKeyPressed(Keys.MENU)){
 				pause = true;
 			}
 		}
+		
 		else if(pause){
+			
+			botonDisparo.setDisabled(true);
+			
+			for(Actor actor:escenario.getActors()){
+				if(actor instanceof ActoresEnemigos){
+					((ActoresEnemigos) actor).setMover(false);
+				}
+			}
 			
 			escenario.addActor(menuPausa);
 			
 		}
+		
 		else if(gameover){
+			
+			botonDisparo.setDisabled(true);
+			
+			for(Actor actor:escenario.getActors()){
+				if(actor instanceof ActoresEnemigos){
+					((ActoresEnemigos) actor).setMover(false);
+				}
+			}
+			
 			escenario.addActor(menuPausa);
 		}
 		
@@ -295,7 +313,6 @@ public class PantallaJuego extends Pantalla {
 	public void resize(int width, int height) {
 		escenario.getViewport().update(width, height);
 		ready.setSize(width, height);
-		//fondo2.setSize(width, height);
 	}
 
 	@Override
@@ -319,6 +336,30 @@ public class PantallaJuego extends Pantalla {
 
 	public void setBarraVida(ActorBarraVida barraVida) {
 		this.barraVida = barraVida;
+	}
+
+	public int getPuntuacion() {
+		return puntuacion;
+	}
+
+	public void setPuntuacion(int puntuacion) {
+		this.puntuacion = puntuacion;
+	}
+
+	public ActorTexto getScore() {
+		return score;
+	}
+
+	public void setScore(ActorTexto score) {
+		this.score = score;
+	}
+
+	public ActorTexto getTextoPuntos() {
+		return textoPuntos;
+	}
+
+	public void setTextoPuntos(ActorTexto textoPuntos) {
+		this.textoPuntos = textoPuntos;
 	}
 
 	@Override

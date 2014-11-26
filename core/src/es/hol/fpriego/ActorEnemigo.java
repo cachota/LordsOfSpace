@@ -8,25 +8,27 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 
-public class ActorEnemigo extends Actor {
+public class ActorEnemigo extends ActoresEnemigos{
 	
 	private Sprite img,imgAnim;
 	private Animation animExplota;
 	private float velocidad,estado;
 	private int vida,tipo,puntos;
-	private Rectangle rectEnemigo;
-	private boolean esNuevo,paused,dibujarEnemigo;
+	private Rectangle rect;
+	private boolean esNuevo,paused,dibujar,mover;
 	private SequenceAction accionParpadeo;
 	
-	public ActorEnemigo(Sprite[] sprites,Animation anim,int tipo,boolean paused) {
+	public ActorEnemigo(){}
+	
+	public ActorEnemigo(Sprite[] sprites,Animation anim,int tipo,boolean paused,boolean mover) {
 		
 		this.setEsNuevo(true);
-		this.setDibujarEnemigo(true);
+		this.setDibujar(true);
 		this.setPaused(paused);
+		this.setMover(mover);
 		this.setTipo(tipo);
 		this.setEstado(0);
 		this.animExplota = anim;
@@ -53,7 +55,7 @@ public class ActorEnemigo extends Actor {
 		}
 		
 		this.setSize(img.getWidth(), img.getHeight());
-		this.setRectEnemigo(new Rectangle(getX(), getY(), img.getWidth(), img.getHeight()));
+		this.setRect(new Rectangle(getX(), getY(), img.getWidth(), img.getHeight()));
 	}
 
 	@Override
@@ -64,8 +66,6 @@ public class ActorEnemigo extends Actor {
 		
 		if(!paused){
 			
-			setPosRect(getX(), getY());
-			
 			if(getVida()==0){
 				estado+=Gdx.graphics.getDeltaTime();
 				batch.draw(animExplota.getKeyFrame(estado, false), getX(), getY());
@@ -73,16 +73,29 @@ public class ActorEnemigo extends Actor {
 					this.reset();
 				}
 			}
-			else if(dibujarEnemigo){
+			else if(dibujar){
 				batch.draw(img, getX(), getY());
 			}
 		}
+		
+		//System.out.println("Enemig x = "+getX()+" y = "+getY());
+		//System.out.println("Rectan x = "+getRectEnemigo().getWidth()+" y = "+getRectEnemigo().getHeight());
+	}
+	
+	@Override
+	public void act(float delta) {
+		if(mover){
+			mover(getTipo());
+		}
+		super.act(delta);
 	}
 
 	public void mover(int tipo){
+		
 		if(esNuevo){
 			this.setX((float) (MathUtils.random(0, 37))*10);
 			this.setY(600);
+			setPosRect(getX(), getY());
 			this.esNuevo = false;
 		}
 		else {
@@ -104,17 +117,38 @@ public class ActorEnemigo extends Actor {
 					this.esNuevo = true;
 				}
 			}
+			setPosRect(getX(), getY());
 		}
 	}
 	
 	public boolean colisionDisparo(Rectangle rect){
-		if(getVida()>0){
-			if(rect.overlaps(getRectEnemigo())){
+		
+		if(getRect().overlaps(rect)){
+			if(getVida()!=0){
 				this.setVida(getVida()-1);
+				parpadeo();
+				if(getVida()==0){
+					setVelocidad(0);
+				}
 				return true;
 			}
 		}
 		return false;
+		
+	}
+	
+	public boolean colisionNave(Rectangle rect){
+		
+		if(getRect().overlaps(rect) && getVida()!=0){
+				setVida(0);
+				setVelocidad(0);
+				return true;
+		}
+		return false;
+		
+		
+		
+		
 	}
 	
 	public void parpadeo(){
@@ -130,47 +164,45 @@ public class ActorEnemigo extends Actor {
 		}));
 	}
 	
-	private void setPosRect(float x, float y) {
-		this.rectEnemigo.x = x;
-		this.rectEnemigo.y = y;
+	public void setPosRect(float x, float y) {
+		this.rect.x = x;
+		this.rect.y = y;
 	}
-
 	public Sprite getImg() {
 		return img;
 	}
-
 	public void setImg(Sprite img) {
 		this.img = img;
+	}
+	public Animation getAnim() {
+		return animExplota;
+	}
+
+	public void setAnim(Animation animExplota) {
+		this.animExplota = animExplota;
 	}
 
 	public float getVelocidad() {
 		return velocidad;
 	}
-
 	public void setVelocidad(float velocidad) {
 		this.velocidad = velocidad;
 	}
-
 	public int getVida() {
 		return vida;
 	}
-
 	public void setVida(int vida) {
 		this.vida = vida;
 	}
-
-	public Rectangle getRectEnemigo() {
-		return rectEnemigo;
+	public Rectangle getRect() {
+		return rect;
 	}
-
-	public void setRectEnemigo(Rectangle rectEnemigo) {
-		this.rectEnemigo = rectEnemigo;
+	public void setRect(Rectangle rectEnemigo) {
+		this.rect = rectEnemigo;
 	}
-
 	public boolean isEsNuevo() {
 		return esNuevo;
 	}
-
 	public void setEsNuevo(boolean esNuevo) {
 		this.esNuevo = esNuevo;
 	}
@@ -195,23 +227,19 @@ public class ActorEnemigo extends Actor {
 			break;
 		}
 	}
-
+	
 	public boolean isPaused() {
 		return paused;
 	}
-
 	public void setPaused(boolean paused) {
 		this.paused = paused;
 	}
-
 	public int getPuntos() {
 		return puntos;
 	}
-
 	public void setPuntos(int puntos) {
 		this.puntos = puntos;
 	}
-
 	public int getTipo() {
 		return tipo;
 	}
@@ -235,13 +263,20 @@ public class ActorEnemigo extends Actor {
 	public void setImgAnim(Sprite imgAnim) {
 		this.imgAnim = imgAnim;
 	}
-
-	public boolean isDibujarEnemigo() {
-		return dibujarEnemigo;
+	public boolean isDibujar() {
+		return dibujar;
+	}
+	public void setDibujar(boolean dibujarEnemigo) {
+		this.dibujar = dibujarEnemigo;
 	}
 
-	public void setDibujarEnemigo(boolean dibujarEnemigo) {
-		this.dibujarEnemigo = dibujarEnemigo;
+	public boolean isMover() {
+		return this.mover;
 	}
+
+	public void setMover(boolean mover) {
+		this.mover = mover;
+	}
+
 
 }
