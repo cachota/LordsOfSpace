@@ -24,7 +24,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 		 
 		this.setImg(img);
 		this.setSize(img.getWidth(), img.getHeight());
-		this.setVelocidad(1.5f);
+		this.setVelocidadY(1.5f);
 		this.setEsNuevo(true);
 		this.setDibujar(true);
 		this.setPaused(paused);
@@ -65,7 +65,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 		if(mover){
 			this.addAction(Actions.rotateBy(2));
 			if(esNuevo){
-				x = (float) (MathUtils.random(0, 37))*10;
+				x = (float) (MathUtils.random(0, 36))*10;
 				this.setX(x);
 				this.setY(600);
 				this.esNuevo = false;
@@ -86,7 +86,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 		setEsNuevo(true);
 		setEstado(0);
 		setVida(3);
-		setVelocidad(1.5f);
+		setVelocidadY(1.5f);
 	}
 	
 	public boolean colisionDisparo(Rectangle rect){
@@ -95,7 +95,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 			if(getVida()!=0){
 				this.setVida(getVida()-1);
 				if(getVida()==0){
-					setVelocidad(0);
+					setVelocidadY(0);
 				}
 				return true;
 			}
@@ -108,7 +108,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 		
 		if(getRect().overlaps(rect) && getVida()!=0){
 			setVida(0);
-			setVelocidad(0);
+			setVelocidadY(0);
 			return true;
 		}
 		
@@ -134,7 +134,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 	public float getVelocidad() {
 		return velocidad;
 	}
-	public void setVelocidad(float velocidad) {
+	public void setVelocidadY(float velocidad) {
 		this.velocidad = velocidad;
 	}
 	public Rectangle getRect() {
@@ -170,7 +170,7 @@ public class ActorAsteroide extends ActoresEnemigos{
 		this.dibujar = dibujarAsteroide;
 	}
 	public int getPuntos() {
-		return puntos;
+		return this.puntos;
 	}
 	public void setPuntos(int puntos) {
 		this.puntos = puntos;

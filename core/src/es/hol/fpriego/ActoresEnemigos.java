@@ -64,7 +64,7 @@ public abstract class ActoresEnemigos extends Actor{
 		return velocidad;
 	}
 
-	public void setVelocidad(float velocidad) {
+	public void setVelocidadY(float velocidad) {
 		this.velocidad = velocidad;
 	}
 

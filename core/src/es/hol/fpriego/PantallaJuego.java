@@ -3,6 +3,7 @@ package es.hol.fpriego;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -12,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.StringBuilder;
 
 public class PantallaJuego extends Pantalla {
 	
@@ -30,6 +32,8 @@ public class PantallaJuego extends Pantalla {
 	private Dialog menuPausa;
 	private Button botonSalir,botonResumir;
 	private ActorBarraVida barraVida;
+	private StringBuilder puntosBuilder;
+	private boolean nivel1,nivel2,nivel3,nivel4,nivel5,nivel6,nivel7,nivel8,nivel9,nivel10,nivel11,nivel12,nivel13,nivel14;
 	
 	public PantallaJuego(JuegoMain game) {
 		
@@ -50,6 +54,20 @@ public class PantallaJuego extends Pantalla {
 		setPuntuacion(0);
 		pause = false;
 		gameover = false;
+		nivel1=false;
+		nivel2=false;
+		nivel3=false;
+		nivel4=false;
+		nivel5=false;
+		nivel6=false;
+		nivel7=false;
+		nivel8=false;
+		nivel9=false;
+		nivel10=false;
+		nivel11=false;
+		nivel12=false;
+		nivel13=false;
+		nivel14=false;
 		
 		cargarInicioJuego();
 		
@@ -95,9 +113,11 @@ public class PantallaJuego extends Pantalla {
 		barraVida = new ActorBarraVida(game.graficos.getBarraVidaTex(), game.graficos.getVidaTex(), game.graficos.getMiniPlayerSprite());
 		
 		pad = new Touchpad(1,skin);
+		pad.toFront();
 		botonDisparo = new TextButton("Fire!",skin);
 		botonDisparo.setSize(100, 70);
 		botonDisparo.setDisabled(true);
+		botonDisparo.toFront();
 		
 		menuPausa = new Dialog("Pausa",skin);
 		botonSalir = new TextButton("Salir",skin);
@@ -113,10 +133,13 @@ public class PantallaJuego extends Pantalla {
 		fondo3 = new ActorFondo(game.graficos.getFondoSprite());
 		ready = new ActorTexto(game.graficos.getSkin(),"Preparate!",2f,130,320);
 		score = new ActorTexto(game.graficos.getSkin(), "score: ", 2f, 20, 550);
+		score.toFront();
 		textoPuntos = new ActorTexto(game.graficos.getSkin(),"0",2f,110,550);
+		textoPuntos.toFront();
+		puntosBuilder = new StringBuilder();
 		
 		asteroide = new ActorAsteroide(game.graficos.getAsteroideSprite(),game.graficos.getAnimRompe(),true,false);
-		enemy1 = new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),0,true,false);
+		enemy1 = new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),0,true,false,game.graficos.getDisparoEnemySprite());
 		
 		nave = new ActorNave(game.graficos.getNaveSprite(),game.graficos.getAnimExplota());
 		nave.setPosition(escenario.getWidth()/2, 100);
@@ -166,7 +189,7 @@ public class PantallaJuego extends Pantalla {
 		escenario.addActor(score);
 		escenario.addActor(textoPuntos);
 		escenario.addActor(barraVida);
-		
+	
 		botonDisparo.setPosition(280, 20);
 		escenario.addActor(botonDisparo);
 		
@@ -189,14 +212,13 @@ public class PantallaJuego extends Pantalla {
 				if(actor instanceof ActoresEnemigos){
 						
 					((ActoresEnemigos) actor).setMover(true);
-						
+					
 					if(((ActoresEnemigos) actor).colisionNave(nave.getRectNave()) && !nave.esInmune()){
 						nave.setVida(nave.getVida()-1);
 						barraVida.quitarVida();
 						nave.setInmune(true);
 						if(nave.getVida()==0){
 							((ActoresEnemigos) actor).setDibujar(false);
-							
 						}
 					}
 										
@@ -204,7 +226,7 @@ public class PantallaJuego extends Pantalla {
 					
 						for(int i=0;i<nave.getShots().size;i++){
 						
-							if(((ActoresEnemigos)actor).colisionDisparo(nave.getShots().get(i).getRectDisparo())){
+							if(((ActoresEnemigos)actor).colisionDisparo(nave.getShots().get(i).getRectDisparo()) && ((ActoresEnemigos)actor).getY()-((ActoresEnemigos)actor).getHeight()<600){
 								
 								if(((ActoresEnemigos) actor).getVida()==0){
 									this.setPuntuacion(this.getPuntuacion()+((ActoresEnemigos)actor).getPuntos());
@@ -221,7 +243,9 @@ public class PantallaJuego extends Pantalla {
 						
 			}
 			
-			textoPuntos.setTexto(Integer.toString(this.getPuntuacion()));
+			puntosBuilder.setLength(0);
+			puntosBuilder.append(this.getPuntuacion());
+			textoPuntos.setTexto(puntosBuilder.toString());
 				
 			if(nave.esInmune()){
 				nave.setContadorIn(nave.getContadorIn()+1);
@@ -231,6 +255,82 @@ public class PantallaJuego extends Pantalla {
 				}
 			}
 			
+			if(getPuntuacion()>=10 && !nivel1){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),1,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel1 = true;
+			}
+			if(getPuntuacion()>=40 && !nivel2){
+				
+				escenario.addActor(new ActorAsteroide(game.graficos.getAsteroideSprite(),game.graficos.getAnimRompe(),false,true));
+				nivel2 = true;
+			}
+			if(getPuntuacion()>=80 && !nivel3){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),0,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel3 = true;
+			}
+			if(getPuntuacion()>=120 && !nivel4){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),2,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel4 = true;
+			}
+			if(getPuntuacion()>=160 && !nivel5){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),1,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel5 = true;
+			}
+			if(getPuntuacion()>=200 && !nivel6){
+				
+				escenario.addActor(new ActorAsteroide(game.graficos.getAsteroideSprite(),game.graficos.getAnimRompe(),false,true));
+				nivel6 = true;
+			}
+			if(getPuntuacion()>240 && !nivel7){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),0,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel7 = true;
+			}
+			if(getPuntuacion()>=280 && !nivel8){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),1,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel8 = true;
+			}
+			if(getPuntuacion()>=320 && !nivel9){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),2,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel9 = true;
+			}
+			if(getPuntuacion()>=360 && !nivel10){
+				
+				escenario.addActor(new ActorAsteroide(game.graficos.getAsteroideSprite(),game.graficos.getAnimRompe(),false,true));
+				nivel10 = true;
+			}
+			if(getPuntuacion()>=400 && !nivel11){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),0,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel11 = true;
+			}
+			if(getPuntuacion()>=440 && !nivel12){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),1,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel12 = true;
+			}
+			if(getPuntuacion()>=480 && !nivel13){
+				
+				escenario.addActor(new ActorEnemigo(game.graficos.getEnemSprites(),game.graficos.getAnimExplota(),2,false,true,game.graficos.getDisparoEnemySprite()));
+				nivel13 = true;
+			}
+			if(getPuntuacion()>=520 && !nivel14){
+				
+				escenario.addActor(new ActorAsteroide(game.graficos.getAsteroideSprite(),game.graficos.getAnimRompe(),false,true));
+				nivel14 = true;
+			}
+			
+			botonDisparo.toFront();
+			pad.toFront();
+			score.toFront();
+			textoPuntos.toFront();
+			
 			if(barraVida.getVida()==0){
 				
 				nave.setInmune(false);
@@ -239,6 +339,11 @@ public class PantallaJuego extends Pantalla {
 				for(Actor actor:escenario.getActors()){
 					if(actor instanceof ActorEnemigo){
 						((ActorEnemigo) actor).setMover(false);
+						if(((ActorEnemigo) actor).getActions().size>0){
+							for(Action accion:((ActorEnemigo) actor).getActions()){
+								((ActorEnemigo) actor).removeAction(accion);
+							}
+						}
 					}
 				}
 				this.gameover = true;
@@ -308,7 +413,7 @@ public class PantallaJuego extends Pantalla {
 		}
 		
 	}
-	
+
 	@Override
 	public void resize(int width, int height) {
 		escenario.getViewport().update(width, height);

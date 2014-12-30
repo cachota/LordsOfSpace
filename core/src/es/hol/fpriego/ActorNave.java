@@ -99,15 +99,7 @@ public class ActorNave extends Actor {
 	
 	public void parpadeo(){
 		
-		this.addAction(Actions.sequence(accionParpadeo,new Action(){
-
-			@Override
-			public boolean act(float delta) {
-				this.getActor().removeAction(this);
-				return true;
-			}
-	
-		}));
+		this.addAction(Actions.sequence(Actions.color(Color.RED, 0.1f),Actions.color(getColor(),0.1f)));
 	}
 
 	public Sprite getImg() {
